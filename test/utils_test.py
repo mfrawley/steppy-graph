@@ -1,4 +1,4 @@
-from utils import filter_internal_keys
+from utils import filter_props
 
 d = {
     "_foo": True,
@@ -7,6 +7,6 @@ d = {
 
 
 def test_filter_keys():
-    o = filter_internal_keys(d)
+    o = filter_props(d)
     assert o['foo'] == True
     assert '_foo' not in o.keys()

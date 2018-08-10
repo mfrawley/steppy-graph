@@ -2,7 +2,7 @@ import json
 from typing import List
 
 from states import State, JSON_INDENT, Task, StateEncoder, ResourceType, Resource
-from utils import filter_internal_keys
+from utils import filter_props
 
 
 class StateMachine:
@@ -57,7 +57,7 @@ class StateMachineEncoder(json.JSONEncoder):
         if isinstance(obj, StateMachine):
             for k, s in obj.States.items():
                 obj.States[k] = StateEncoder().default(s)
-            return filter_internal_keys(obj.__dict__)
+            return filter_props(obj.__dict__)
 
 
         try:
