@@ -47,6 +47,9 @@ class StateMachine:
     def get_states(self) -> List[State]:
         return self._states
 
+    def count_states(self) -> int:
+        return len(self._states)
+
     def printable(self) -> str:
         return ' '.join([str(s.__dict__) for k, s in self.build().States.items()])
 

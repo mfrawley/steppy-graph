@@ -18,10 +18,12 @@ class ErrorStates(Enum):
 
 JSON_INDENT = 4
 DEFAULT_TASK_TIMEOUT = 600
-
+DEFAULT_WAIT_PERIOD = 60
 
 class StateType(Enum):
     TASK = 'Task'
+    PASS = 'Pass'
+    WAIT = 'Wait'
 
 
 class ResourceType(Enum):
@@ -82,6 +84,9 @@ class State(JsonSerializable):
         self.End = False
         self.Comment = comment
         self._name = name
+        self.InputPath = None
+        self.OutputPath = None
+        self.Next = None
 
     def name(self) -> str:
         return self._name
@@ -95,20 +100,13 @@ class Task(State):
                  ) -> None:
         State.__init__(self, type=StateType.TASK, name=name, comment=comment)
         self.Resource: str = str(resource)
-        self.Next = None
         self.ResultPath = None
         self.Retry: List[Retry] = None
         self.Catch = None
         self.TimeoutSeconds = DEFAULT_TASK_TIMEOUT
-        # self.HeartbeatSeconds
+        self.HeartbeatSeconds = None
 
 
-# {
-#         "ErrorEquals": [ "States.Timeout" ],
-#         "IntervalSeconds": 3,
-#         "MaxAttempts": 2,
-#         "BackoffRate": 1.5
-#     }
 class Retry:
     def __init__(self, max_attempts=ERROR_MAX_ATTEMPTS_DEFAULT,
                  backoff_rate=ERROR_BACKOFF_RATE_DEFAULT,
@@ -118,6 +116,28 @@ class Retry:
         self.MaxAttempts = max_attempts
         self.IntervalSeconds = interval_seconds
         self.ErrorEquals = error_equals
+
+
+class Pass(State):
+    def __init__(self,
+                 name: str,
+                 result: dict=None,
+                 result_path: str=None,
+                 comment: str=''
+                 ):
+        State.__init__(self, type=StateType.PASS, name=name, comment=comment)
+        self.ResultPath = result_path
+        self.Result = result
+
+
+class Wait(State):
+    def __init__(self,
+                 name: str,
+                 seconds: int=DEFAULT_TASK_TIMEOUT,
+                 comment: str=''
+                 ):
+        State.__init__(self, type=StateType.WAIT, name=name, comment=comment)
+        self.Seconds = seconds
 
 
 if __name__ == "__main__":

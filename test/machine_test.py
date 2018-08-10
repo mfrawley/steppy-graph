@@ -1,7 +1,7 @@
 import json
 
 from machine import StateMachine
-from states import Task, Resource, ResourceType
+from states import Task, Resource, ResourceType, Wait, Pass
 
 
 def test_hello_machine():
@@ -22,4 +22,14 @@ def test_next_set_for_two_state_machine():
     assert s.StartAt == "Kermit"
     assert s.get_states()[0].Next == s.get_states()[1].name(), s.printable()
     assert s.get_states()[-1].Next == None
-    # assert s.get_states()[0].Next == s.get_states()[1].name()
+
+
+def test_pass_wait():
+    s = StateMachine()
+    s.next(Wait(name="Hold!"))
+    s.next(Pass(name="Pass the buck"))
+    s.next(Wait(name="Who you calling buck?", seconds=5))
+    s.build()
+
+    assert s.count_states() == 3
+    assert s.get_states()[-1].Seconds == 5
