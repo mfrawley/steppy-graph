@@ -1,7 +1,7 @@
 import json
 
 from machine import StateMachine
-from states import Task
+from states import Task, Resource, ResourceType
 
 
 def test_hello_machine():
@@ -14,8 +14,9 @@ def test_hello_machine():
 
 def test_next_set_for_two_state_machine():
     s = StateMachine()
-    s.next(Task(resource="some", name="Kermit", comment='Foo'))
-    s.next(Task(resource="some", name="Miss Piggy", comment='Foo'))
+    res = Resource(name="foores", type=ResourceType.LAMBDA)
+    s.next(Task(resource=res, name="Kermit", comment='Foo'))
+    s.next(Task(resource=res, name="Miss Piggy", comment='Foo'))
     s.build()
     assert len(s.get_states()) == 2
     assert s.StartAt == "Kermit"

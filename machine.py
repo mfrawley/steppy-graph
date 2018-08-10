@@ -1,14 +1,18 @@
 import json
 from typing import List
 
-from states import State, JSON_INDENT, Task, StateEncoder
+from states import State, JSON_INDENT, Task, StateEncoder, ResourceType, Resource
+from utils import filter_internal_keys
 
 
 class StateMachine:
-    def __init__(self) -> None:
+    def __init__(self, region:str='', account:str='') -> None:
+        self.TimeoutSeconds = 600
         self.States = None
         self.StartAt: str = None
         self._states: List[State] = []
+        self._region = region
+        self._account = account
 
     def to_json(self) -> str:
         return json.dumps(self,
@@ -44,18 +48,17 @@ class StateMachine:
         return self._states
 
     def printable(self) -> str:
-        # return self.build().States
         return ' '.join([str(s.__dict__) for k, s in self.build().States.items()])
 
 
 class StateMachineEncoder(json.JSONEncoder):
     def default(self, obj):
+        print(type(obj))
         if isinstance(obj, StateMachine):
-            del obj._states
-
             for k, s in obj.States.items():
                 obj.States[k] = StateEncoder().default(s)
-                # return obj
+            return filter_internal_keys(obj.__dict__)
+
 
         try:
             return super(StateMachineEncoder, self).default(obj)
@@ -66,6 +69,8 @@ class StateMachineEncoder(json.JSONEncoder):
 
 if __name__ == "__main__":
     s = StateMachine()
-    s.next(Task(resource="some", name="Kermit", comment='Foo'))
+    res = Resource(name="foores", type=ResourceType.LAMBDA)
+    s.next(Task(resource=res, name="Kermit", comment='Foo'))
+    s.next(Task(resource=res, name="Miss Piggy", comment='Foo'))
     s.build()
     print(s.to_json())
