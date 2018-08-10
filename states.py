@@ -51,8 +51,7 @@ class Resource:
 
 class StateEncoder(json.JSONEncoder):
     def default(self, obj):
-        print("isinstance(obj, StateType)", obj, isinstance(obj, Task))
-        if isinstance(obj, Task):
+        if isinstance(obj, State):
             obj.Type = obj.Type.value
             if obj.Next is None:
                 del obj.Next

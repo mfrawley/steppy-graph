@@ -1,14 +1,16 @@
 import json
 from typing import List
 
-from states import State, JSON_INDENT, Task, StateEncoder, ResourceType, Resource
+from states import State, JSON_INDENT, Task, StateEncoder, ResourceType, Resource, Wait, Pass
 from utils import filter_props
 
+class DuplicateStateError(Exception):
+    pass
 
 class StateMachine:
     def __init__(self, region:str='', account:str='') -> None:
         self.TimeoutSeconds = 600
-        self.States = None
+        self.States: List[State] = None
         self.StartAt: str = None
         self._states: List[State] = []
         self._region = region
@@ -25,6 +27,11 @@ class StateMachine:
         """
         This method
         """
+        for s in self._states:
+            if s.name() == state.name():
+                err_message = f"Duplicate State: Name '{s.name()}' already used in graph."
+                raise DuplicateStateError(err_message)
+
         if len(self._states) > 0:
             self._states[-1].Next = state.name()
         self._states.append(state)
@@ -74,6 +81,9 @@ if __name__ == "__main__":
     s = StateMachine()
     res = Resource(name="foores", type=ResourceType.LAMBDA)
     s.next(Task(resource=res, name="Kermit", comment='Foo'))
+    s.next(Wait(name="Waiting time", comment='Foo', seconds=2))
+    s.next(Pass(name="Pass the buck"))
     s.next(Task(resource=res, name="Miss Piggy", comment='Foo'))
     s.build()
+    
     print(s.to_json())
