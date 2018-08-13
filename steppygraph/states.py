@@ -20,10 +20,12 @@ JSON_INDENT = 4
 DEFAULT_TASK_TIMEOUT = 600
 DEFAULT_WAIT_PERIOD = 60
 
+
 class StateType(Enum):
     TASK = 'Task'
     PASS = 'Pass'
     WAIT = 'Wait'
+    CHOICE = 'Choice'
 
 
 class ResourceType(Enum):
@@ -120,9 +122,9 @@ class Retry:
 class Pass(State):
     def __init__(self,
                  name: str,
-                 result: dict=None,
-                 result_path: str=None,
-                 comment: str=''
+                 result: dict = None,
+                 result_path: str = None,
+                 comment: str = ''
                  ):
         State.__init__(self, type=StateType.PASS, name=name, comment=comment)
         self.ResultPath = result_path
@@ -132,11 +134,70 @@ class Pass(State):
 class Wait(State):
     def __init__(self,
                  name: str,
-                 seconds: int=DEFAULT_TASK_TIMEOUT,
-                 comment: str=''
+                 seconds: int = DEFAULT_TASK_TIMEOUT,
+                 comment: str = ''
                  ):
         State.__init__(self, type=StateType.WAIT, name=name, comment=comment)
         self.Seconds = seconds
+
+
+class EqualityType(Enum):
+    BOOLEAN_EQ = "BooleanEquals"
+    NUMERIC_EQ = "NumericEquals"
+    NUMERIC_LT = "NumericLessThan"
+    NUMERIC_LT_EQ = "NumericLessThanEquals"
+    NUMERIC_GT = "NumericGreaterThan"
+    NUMERIC_GT_EQ = "NumericGreaterThanEquals"
+
+    STRING_EQ = "StringEquals"
+    STRING_LT = "StringLessThan"
+    STRING_GT = "StringGreaterThan"
+    STRING_LT_EQ = "StringLessThanEquals"
+    STRING_GT_EQ = "StringGreaterThanEquals"
+
+    TS_EQ = "TimestampEquals"
+    TS_LT = "TimestampLessThan"
+    TS_GT = "TimestampGreaterThan"
+    TS_LT_EQ = "TimestampLessThanEquals"
+    TS_GT_EQ = "TimestampGreaterThanEquals"
+
+    AND = "And"
+    OR = "Or"
+    NOT = "Not"
+
+
+class Equals:
+    def __init__(self, equality_type: EqualityType, value: object) -> None:
+        self._equality_type = equality_type
+        self._value = value
+
+    def type(self) -> str:
+        return self._equality_type.value
+
+    def value(self) -> object:
+        return self._value
+
+
+class ChoiceCase:
+    def __init__(self,
+                 variable: str,
+                 comparison: Equals,
+                 next: str) -> None:
+        self.Variable = variable
+        self._comparison = comparison
+        self.Next = next
+
+
+class Choice(State):
+    def __init__(self,
+                 name: str,
+                 choices: List[ChoiceCase],
+                 default: State,
+                 comment: str = ''
+                 ) -> None:
+        State.__init__(type=StateType.CHOICE, name=name, comment=comment)
+        self.Choices = str(choices)
+        self.Default = str(default)
 
 
 if __name__ == "__main__":
