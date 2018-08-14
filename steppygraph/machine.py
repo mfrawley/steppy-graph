@@ -65,7 +65,6 @@ class StateMachine:
 
 class StateMachineEncoder(json.JSONEncoder):
     def default(self, obj):
-        print(type(obj))
         if isinstance(obj, StateMachine):
             for k, s in obj.States.items():
                 obj.States[k] = StateEncoder().default(s)
@@ -77,14 +76,3 @@ class StateMachineEncoder(json.JSONEncoder):
             print(e)
             print(obj.__dict__)
 
-
-if __name__ == "__main__":
-    s = StateMachine()
-    res = Resource(name="foores", type=ResourceType.LAMBDA)
-    s.next(Task(resource=res, name="Kermit", comment='Foo'))
-    s.next(Wait(name="Waiting time", comment='Foo', seconds=2))
-    s.next(Pass(name="Pass the buck"))
-    s.next(Task(resource=res, name="Miss Piggy", comment='Foo'))
-    s.build()
-
-    print(s.to_json())
