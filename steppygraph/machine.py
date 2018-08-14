@@ -1,14 +1,16 @@
 import json
 from typing import List
 
-from states import State, JSON_INDENT, Task, StateEncoder, ResourceType, Resource, Wait, Pass
-from utils import filter_props
+from steppygraph.states import State, JSON_INDENT, Task, StateEncoder, ResourceType, Resource, Wait, Pass
+from steppygraph.utils import filter_props
+
 
 class DuplicateStateError(Exception):
     pass
 
+
 class StateMachine:
-    def __init__(self, region:str='', account:str='') -> None:
+    def __init__(self, region: str = '', account: str = '') -> None:
         self.TimeoutSeconds = 600
         self.States: List[State] = None
         self.StartAt: str = None
@@ -69,7 +71,6 @@ class StateMachineEncoder(json.JSONEncoder):
                 obj.States[k] = StateEncoder().default(s)
             return filter_props(obj.__dict__)
 
-
         try:
             return super(StateMachineEncoder, self).default(obj)
         except Exception as e:
@@ -85,5 +86,5 @@ if __name__ == "__main__":
     s.next(Pass(name="Pass the buck"))
     s.next(Task(resource=res, name="Miss Piggy", comment='Foo'))
     s.build()
-    
+
     print(s.to_json())
