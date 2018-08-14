@@ -13,13 +13,17 @@ DEFAULT_TASK_TIMEOUT = 600
 DEFAULT_WAIT_PERIOD = 60
 
 
-class ErrorStates(Enum):
+class ErrorType(Enum):
     ALL = "States.ALL"
     TIMEOUT = "States.Timeout"
+    TASK_FAILED = "States.TaskFailed"
+    PERMISSIONS = "States.Permissions"
+    RESULT_PATH_MATCH_FAILURE = "States.ResultPathMatchFailure"
+    BRANCH_FAILED = "States.BranchFailed"
+    NO_CHOICE_MATCHED = "States.NoChoiceMatched"
 
     def __str__(self):
         return self.value
-
 
 class StateType(Enum):
     TASK = 'Task'
@@ -167,17 +171,17 @@ class Task(State):
         State.__init__(self, type=StateType.TASK, name=name, comment=comment)
         self.Resource: str = str(resource)
         self.ResultPath = None
-        self.Retry: List[Retry] = None
+        self.Retry: List[Retrier] = None
         self.Catch = None
         self.TimeoutSeconds = DEFAULT_TASK_TIMEOUT
         self.HeartbeatSeconds = None
 
 
-class Retry:
+class Retrier:
     def __init__(self, max_attempts=ERROR_MAX_ATTEMPTS_DEFAULT,
                  backoff_rate=ERROR_BACKOFF_RATE_DEFAULT,
                  interval_seconds=ERROR_INTERVAL_S_DEFAULT,
-                 error_equals=[ErrorStates.ALL]) -> None:
+                 error_equals:ErrorType=[ErrorType.ALL]) -> None:
         self.BackoffRate = backoff_rate
         self.MaxAttempts = max_attempts
         self.IntervalSeconds = interval_seconds
