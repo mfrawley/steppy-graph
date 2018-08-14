@@ -41,6 +41,13 @@ def test_pass_wait():
     assert s.to_json() == read_json_test_case('pass_wait')
 
 
+def test_machine_sets_region_and_ac():
+    s = StateMachine(region='eu-west-1', account=1234)
+    s.next(Task(name="Hold!", resource=Resource("Foo", type=ResourceType.LAMBDA)))
+    s.build()
+    assert s.get_states()[0].Resource.region == 'eu-west-1'
+    assert s.get_states()[0].Resource.aws_ac == 1234
+
 def write_json_test_case(name: str, s: StateMachine) -> None:
     with open(PurePath() / f'steppygraph/test/json/{name}.json', 'w+') as f:
         f.write(s.to_json())

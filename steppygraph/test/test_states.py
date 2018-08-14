@@ -3,6 +3,7 @@ from steppygraph.states import Choice, ChoiceCase, Comparison, ComparisonType, S
     Pass
 from steppygraph.states import Resource, ResourceType
 
+
 def test_state_to_str():
     assert str(StateType.CHOICE) == "Choice"
 
