@@ -1,5 +1,5 @@
 test:
-	python -m pytest
+	python -m pytest -vv
 
 mypy:
 	mypy .

@@ -1,0 +1,25 @@
+{
+    "StartAt": "Hold!",
+    "States": {
+        "Hold!": {
+            "Comment": "",
+            "End": false,
+            "Next": "Pass the buck",
+            "Seconds": 600,
+            "Type": "Wait"
+        },
+        "Pass the buck": {
+            "Comment": "",
+            "End": false,
+            "Next": "Who you calling buck?",
+            "Type": "Pass"
+        },
+        "Who you calling buck?": {
+            "Comment": "",
+            "End": true,
+            "Seconds": 5,
+            "Type": "Wait"
+        }
+    },
+    "TimeoutSeconds": 600
+}

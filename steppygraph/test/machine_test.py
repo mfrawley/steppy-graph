@@ -1,4 +1,5 @@
 import json
+from pathlib import PurePath
 
 from steppygraph.machine import StateMachine
 from steppygraph.states import Task, Resource, ResourceType, Wait, Pass
@@ -33,3 +34,16 @@ def test_pass_wait():
 
     assert s.count_states() == 3
     assert s.get_states()[-1].Seconds == 5
+
+
+    assert s.to_json() == read_json_test_case('pass_wait')
+
+
+def write_json_test_case(name: str, s: StateMachine) -> None:
+    with open(PurePath() / f'steppygraph/test/json/{name}.json', 'w+') as f:
+        f.write(s.to_json())
+
+
+def read_json_test_case(name: str) -> str:
+    with open(PurePath() / f'steppygraph/test/json/{name}.json', 'r') as f:
+        return f.read()
