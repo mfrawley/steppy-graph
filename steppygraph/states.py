@@ -133,8 +133,8 @@ class JsonSerializable:
 
 class State(JsonSerializable):
     def __init__(self,
-                 type: StateType,
                  name: str,
+                 type: StateType,
                  comment: str = '') -> None:
         self.Type = type
         self.End = False
@@ -164,8 +164,8 @@ def json_resource(val) -> str:
 
 class Task(State):
     def __init__(self,
-                 resource: Resource,
                  name: str,
+                 resource: Resource,
                  comment: str = '',
                  ) -> None:
         State.__init__(self, type=StateType.TASK, name=name, comment=comment)
