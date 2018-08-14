@@ -1,7 +1,7 @@
 import json
 
-from machine import StateMachine
-from states import Task, Resource, ResourceType, Wait, Pass
+from steppygraph.machine import StateMachine
+from steppygraph.states import Task, Resource, ResourceType, Wait, Pass
 
 
 def test_hello_machine():

@@ -1,4 +1,4 @@
-from utils import filter_props
+from steppygraph.utils import filter_props
 
 d = {
     "_foo": True,

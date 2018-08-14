@@ -1,8 +1,8 @@
 import json
 from typing import List
 
-from states import State, JSON_INDENT, Task, StateEncoder, ResourceType, Resource, Wait, Pass
-from utils import filter_props
+from steppygraph.states import State, JSON_INDENT, Task, StateEncoder, ResourceType, Resource, Wait, Pass
+from steppygraph.utils import filter_props
 
 class DuplicateStateError(Exception):
     pass
