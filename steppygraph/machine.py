@@ -27,7 +27,8 @@ class StateMachine:
 
     def next(self, state: State) -> object:
         """
-        This method
+        This method appends a State to the task graph and does some magic to help init certain types
+        of States.
         """
         for s in self._states:
             if s.name() == state.name():
@@ -36,8 +37,21 @@ class StateMachine:
 
         if len(self._states) > 0:
             self._states[-1].Next = state.name()
+
+        self.set_resource_attrs(state)
         self._states.append(state)
         return self
+
+    def set_resource_attrs(self, state):
+        """
+        If the State is a Task and has a resource set, set the metadata to auto-fill aws ac and region
+        :param state:
+        :return:
+        """
+        if isinstance(state, Task):
+            if state.Resource:
+                state.Resource.aws_ac = self._account
+                state.Resource.region = self._region
 
     def build(self) -> object:
         d = {}

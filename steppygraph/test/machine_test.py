@@ -7,7 +7,7 @@ from steppygraph.states import Task, Resource, ResourceType, Wait, Pass
 
 def test_hello_machine():
     s = StateMachine()
-    s.next(Task(resource="some", name="Kermit", comment='Foo'))
+    s.next(Task(resource=Resource("some", type=ResourceType.LAMBDA), name="Kermit", comment='Foo'))
     s.build()
     assert len(s.get_states()) == 1
     assert s.StartAt == s.get_states()[0].name(), str(s.get_states()[0])

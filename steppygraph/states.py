@@ -169,7 +169,9 @@ class Task(State):
                  comment: str = '',
                  ) -> None:
         State.__init__(self, type=StateType.TASK, name=name, comment=comment)
-        self.Resource: str = str(resource)
+        if not isinstance(resource, Resource):
+            raise ValueError("resource must be an instance of the type Resource")
+        self.Resource = resource
         self.ResultPath = None
         self.Retry: List[Retrier] = None
         self.Catch = None
@@ -258,6 +260,4 @@ class Choice(State):
 #     return filter_props(d)
 
 
-if __name__ == "__main__":
-    t = Task(resource="some", name="Kermit", comment='Foo')
-    print(t.to_json())
+
