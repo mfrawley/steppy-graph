@@ -14,7 +14,7 @@ def test_comparison_type_to_str():
 def test_task_to_json():
     assert json.dumps(Task(name="sdfdsf", resource=Resource(type=ResourceType.LAMBDA, name="trigger")),
                       default=to_serializable) == \
-           """{"Type": "Task", "End": false, "Comment": "", "Resource": "arn:aws:lambda:::function:trigger", "TimeoutSeconds": 600}"""
+           """{"Type": "Task", "Comment": "", "Resource": "arn:aws:lambda:::function:trigger", "TimeoutSeconds": 600}"""
 
 
 def test_choice_case_to_json():
@@ -38,4 +38,4 @@ def test_choice_to_json():
 
     assert json.dumps(c,
                       default=to_serializable) == \
-           """{"Type": "Choice", "End": false, "Comment": "", "Choices": [{"Variable": "Foovar", "Next": "endstate", "BooleanEquals": true}], "Default": "endstate"}"""
+           """{"Type": "Choice", "Comment": "", "Choices": [{"Variable": "Foovar", "Next": "endstate", "BooleanEquals": true}], "Default": "endstate"}"""

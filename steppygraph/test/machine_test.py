@@ -23,6 +23,9 @@ def test_next_set_for_two_state_machine():
     assert s.StartAt == "Kermit"
     assert s.get_states()[0].Next == s.get_states()[1].name(), s.printable()
     assert s.get_states()[-1].Next == None
+    # only the last state should have an "End" key according to spec
+    assert s.get_states()[0].End == None
+    assert s.get_states()[-1].End == True
 
 
 def test_pass_wait():
@@ -34,7 +37,6 @@ def test_pass_wait():
 
     assert s.count_states() == 3
     assert s.get_states()[-1].Seconds == 5
-
 
     assert s.to_json() == read_json_test_case('pass_wait')
 

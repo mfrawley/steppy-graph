@@ -137,7 +137,7 @@ class State(JsonSerializable):
                  type: StateType,
                  comment: str = '') -> None:
         self.Type = type
-        self.End = False
+        self.End = None
         self.Comment = comment
         self._name = name
         self.InputPath = None
