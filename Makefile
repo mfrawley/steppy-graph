@@ -4,7 +4,15 @@ test:
 mypy:
 	mypy .
 
-gen_dist:
+dist: clean
 	python setup.py sdist bdist_wheel
 
-.PHONY: test
+test_pub:
+	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+clean:
+	rm -rf build/*
+	rm -rf dist/*
+
+
+.PHONY: test dist
