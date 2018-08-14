@@ -12,6 +12,13 @@ def test_comparison_type_to_str():
     assert str(ComparisonType.BOOLEAN_EQ) == "BooleanEquals"
 
 
+def test_resource_to_json():
+    res = Resource(name="foo-trigger", type=ResourceType.LAMBDA, aws_ac=1234, region="eu-west-1")
+    assert json.dumps(res,
+                      default=to_serializable) == '"arn:aws:lambda:eu-west-1:1234:function:foo-trigger"'
+
+
+
 def test_task_to_json():
     assert json.dumps(Task(name="sdfdsf", resource=Resource(type=ResourceType.LAMBDA, name="trigger")),
                       default=to_serializable) == \

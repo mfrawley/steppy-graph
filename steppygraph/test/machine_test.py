@@ -48,6 +48,7 @@ def test_machine_sets_region_and_ac():
     assert s.get_states()[0].Resource.region == 'eu-west-1'
     assert s.get_states()[0].Resource.aws_ac == 1234
 
+
 def write_json_test_case(name: str, s: StateMachine) -> None:
     with open(PurePath() / f'steppygraph/test/json/{name}.json', 'w+') as f:
         f.write(s.to_json())
