@@ -243,8 +243,8 @@ class Choice(State):
                  comment: str = ''
                  ) -> None:
         State.__init__(self, type=StateType.CHOICE, name=name, comment=comment)
-        self.Choices = str(choices)
-        self.Default = str(default)
+        self.Choices = choices
+        self.Default = default.name()
 
 
 # @to_serializable.register(Choice)

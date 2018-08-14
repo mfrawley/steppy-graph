@@ -1,27 +1,7 @@
 import json
-
-from steppygraph.machine import StateMachine
 from steppygraph.states import Choice, ChoiceCase, Comparison, ComparisonType, State, Task, StateType, to_serializable, \
     Pass
 from steppygraph.states import Resource, ResourceType
-
-
-# def test_choice_boolean_eq():
-#     t = Task(
-#         name="endstate",
-#         resource=Resource(name="foo-trigger", type=ResourceType.LAMBDA)
-#     )
-#     choices = [ChoiceCase(variable="Foovar",
-#                           comparison=Equals(comparison_type=ComparisonType.BOOLEAN_EQ, value=True),
-#                           next=t)
-#                ]
-#     c = Choice(name="Foochoice", choices=choices, default=t)
-#     s = StateMachine("sdfsdf")
-#     s.next(c)
-#     s.next(t)
-#     s.build()
-#     assert s.count_states() == 2
-#     assert json.dumps(c) == ""
 
 def test_state_to_str():
     assert str(StateType.CHOICE) == "Choice"
@@ -44,17 +24,18 @@ def test_choice_case_to_json():
                       default=to_serializable) == \
            """{"Variable": "$.foo.field", "Next": "thisistheend", "BooleanEquals": true}"""
 
-# def test_choice_to_json():
-#     t = Task(
-#         name="endstate",
-#         resource=Resource(name="foo-trigger", type=ResourceType.LAMBDA)
-#     )
-#     choices = [ChoiceCase(variable="Foovar",
-#                           comparison=Comparison(comparison_type=ComparisonType.BOOLEAN_EQ, value=True),
-#                           next=t)
-#                ]
-#     c = Choice(name="Foochoice", choices=choices, default=t)
-#
-#     assert json.dumps(c,
-#                       default=to_serializable) == \
-#            """"""
+
+def test_choice_to_json():
+    t = Task(
+        name="endstate",
+        resource=Resource(name="foo-trigger", type=ResourceType.LAMBDA)
+    )
+    choices = [ChoiceCase(variable="Foovar",
+                          comparison=Comparison(comparison_type=ComparisonType.BOOLEAN_EQ, value=True),
+                          next=t)
+               ]
+    c = Choice(name="Foochoice", choices=choices, default=t)
+
+    assert json.dumps(c,
+                      default=to_serializable) == \
+           """{"Type": "Choice", "End": false, "Comment": "", "Choices": [{"Variable": "Foovar", "Next": "endstate", "BooleanEquals": true}], "Default": "endstate"}"""
