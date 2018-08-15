@@ -3,6 +3,7 @@ from typing import List
 
 from steppygraph.states import State, JSON_INDENT, Task, StateEncoder, ResourceType, Resource, Wait, Pass
 from steppygraph.utils import filter_props
+from steppygraph.serialize import to_serializable
 
 
 class DuplicateStateError(Exception):
@@ -21,9 +22,8 @@ class StateMachine:
     def to_json(self) -> str:
         return json.dumps(self,
                           sort_keys=True,
-                          # skip_keys=True,
                           indent=JSON_INDENT,
-                          cls=StateMachineEncoder)
+                          default=to_serializable)
 
     def next(self, state: State) -> object:
         """
@@ -77,16 +77,22 @@ class StateMachine:
         return ' '.join([str(s.__dict__) for k, s in self.build().States.items()])
 
 
-class StateMachineEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, StateMachine):
-            for k, s in obj.States.items():
-                obj.States[k] = StateEncoder().default(s)
-            return filter_props(obj.__dict__)
+@to_serializable.register(StateMachine)
+def machine_to_json(obj) -> str:
+    for k, s in obj.States.items():
+        obj.States[k] = StateEncoder().default(s)
+    return filter_props(obj.__dict__)
 
-        try:
-            return super(StateMachineEncoder, self).default(obj)
-        except Exception as e:
-            print(e)
-            print(obj.__dict__)
-
+# class StateMachineEncoder(json.JSONEncoder):
+#     def default(self, obj):
+#         if isinstance(obj, StateMachine):
+#             for k, s in obj.States.items():
+#                 obj.States[k] = StateEncoder().default(s)
+#             return filter_props(obj.__dict__)
+#
+#         try:
+#             return super(StateMachineEncoder, self).default(obj)
+#         except Exception as e:
+#             print(e)
+#             print(obj.__dict__)
+#
