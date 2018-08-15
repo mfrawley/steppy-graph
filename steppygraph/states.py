@@ -1,9 +1,8 @@
 import json
 from enum import Enum
 from typing import List
-from functools import singledispatch
-
 from steppygraph.utils import filter_props
+from steppygraph.serialize import to_serializable
 
 ERROR_MAX_ATTEMPTS_DEFAULT = 2
 ERROR_BACKOFF_RATE_DEFAULT = 1.5
@@ -24,6 +23,7 @@ class ErrorType(Enum):
 
     def __str__(self):
         return self.value
+
 
 class StateType(Enum):
     TASK = 'Task'
@@ -76,12 +76,6 @@ class LogicalOperatorType(Enum):
         return self.value
 
 
-@singledispatch
-def to_serializable(val):
-    """Used by default."""
-    return str(val)
-
-
 class Resource:
     def __init__(self,
                  name: str,
@@ -123,15 +117,7 @@ class StateEncoder(json.JSONEncoder):
             print(e)
 
 
-class JsonSerializable:
-    def to_json(self) -> str:
-        return json.dumps(self,
-                          sort_keys=True,
-                          indent=JSON_INDENT,
-                          cls=StateEncoder)
-
-
-class State(JsonSerializable):
+class State:
     def __init__(self,
                  name: str,
                  type: StateType,
@@ -156,12 +142,6 @@ def state_to_json(val: State) -> dict:
     return filter_props(val.__dict__)
 
 
-@to_serializable.register(Resource)
-def json_resource(val) -> str:
-    """Used if *val* is an instance of Resource."""
-    return str(val)
-
-
 class Task(State):
     def __init__(self,
                  name: str,
@@ -183,7 +163,7 @@ class Retrier:
     def __init__(self, max_attempts=ERROR_MAX_ATTEMPTS_DEFAULT,
                  backoff_rate=ERROR_BACKOFF_RATE_DEFAULT,
                  interval_seconds=ERROR_INTERVAL_S_DEFAULT,
-                 error_equals:ErrorType=[ErrorType.ALL]) -> None:
+                 error_equals: ErrorType = [ErrorType.ALL]) -> None:
         self.BackoffRate = backoff_rate
         self.MaxAttempts = max_attempts
         self.IntervalSeconds = interval_seconds
@@ -251,13 +231,3 @@ class Choice(State):
         State.__init__(self, type=StateType.CHOICE, name=name, comment=comment)
         self.Choices = choices
         self.Default = default.name()
-
-
-# @to_serializable.register(Choice)
-# def state_to_json(val: Choice) -> dict:
-#     d = val.__dict__
-#     d[val._comparison.type()] = val._comparison.value()
-#     return filter_props(d)
-
-
-
