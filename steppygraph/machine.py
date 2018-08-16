@@ -98,6 +98,7 @@ class Branch(StateMachine):
                  account: str = '',
                  name=''):
         StateMachine.__init__(self, region=region, account=account, name=name)
+        del self.TimeoutSeconds
 
 
 class Parallel(State):
