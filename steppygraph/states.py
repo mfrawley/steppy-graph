@@ -146,6 +146,10 @@ class State:
                           sort_keys=True,
                           indent=JSON_INDENT)
 
+    def set_next(self, next: str):
+        self._next = next
+        self.Next = next
+
 
 @to_serializable.register(State)
 def state_to_json(val: State) -> dict:

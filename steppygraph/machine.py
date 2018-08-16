@@ -40,7 +40,7 @@ class StateMachine:
                 raise DuplicateStateError(err_message)
 
         if len(self._states) > 0:
-            self._states[-1]._next = state.name()
+            self._states[-1].set_next(state.name())
 
         self.set_resource_attrs(state)
         self._states.append(state)
