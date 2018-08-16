@@ -11,13 +11,17 @@ class DuplicateStateError(Exception):
 
 
 class StateMachine:
-    def __init__(self, region: str = '', account: str = '') -> None:
+    def __init__(self,
+                 region: str='',
+                 account: str='',
+                 name='') -> None:
         self.TimeoutSeconds = 600
         self.States: List[State] = None
         self.StartAt: str = None
         self._states: List[State] = []
         self._region = region
         self._account = account
+        self._name = name
 
     def to_json(self) -> str:
         return json.dumps(self,
@@ -75,6 +79,9 @@ class StateMachine:
 
     def printable(self) -> str:
         return ' '.join([str(s.__dict__) for k, s in self.build().States.items()])
+
+    def name(self) -> str:
+        return self._name
 
 
 @to_serializable.register(StateMachine)
