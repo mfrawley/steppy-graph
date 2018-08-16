@@ -2,18 +2,15 @@
     "StartAt": "Hold!",
     "States": {
         "Hold!": {
-            "Comment": "",
             "Next": "Pass the buck",
             "Seconds": 600,
             "Type": "Wait"
         },
         "Pass the buck": {
-            "Comment": "",
             "Next": "Who you calling buck?",
             "Type": "Pass"
         },
         "Who you calling buck?": {
-            "Comment": "",
             "End": true,
             "Seconds": 5,
             "Type": "Wait"

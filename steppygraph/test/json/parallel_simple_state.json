@@ -1,0 +1,29 @@
+{
+    "Branches": [
+        {
+            "StartAt": "endstate",
+            "States": {
+                "endstate": {
+                    "End": true,
+                    "Resource": "arn:aws:lambda:branchB::function:foo-trigger",
+                    "TimeoutSeconds": 600,
+                    "Type": "Task"
+                }
+            },
+            "TimeoutSeconds": 600
+        },
+        {
+            "StartAt": "endstate",
+            "States": {
+                "endstate": {
+                    "End": true,
+                    "Resource": "arn:aws:lambda:branchB::function:foo-trigger",
+                    "TimeoutSeconds": 600,
+                    "Type": "Task"
+                }
+            },
+            "TimeoutSeconds": 600
+        }
+    ],
+    "Type": "Parallel"
+}

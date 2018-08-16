@@ -1,7 +1,10 @@
 import json
+
+from steppygraph.machine import Branch, Parallel
 from steppygraph.states import Choice, ChoiceCase, Comparison, ComparisonType, State, Task, StateType, to_serializable, \
     Pass
 from steppygraph.states import Resource, ResourceType
+from steppygraph.test.testutils import write_json_test_case, read_json_test_case
 
 
 def test_state_to_str():
@@ -18,11 +21,10 @@ def test_resource_to_json():
                       default=to_serializable) == '"arn:aws:lambda:eu-west-1:1234:function:foo-trigger"'
 
 
-
 def test_task_to_json():
     assert json.dumps(Task(name="sdfdsf", resource=Resource(type=ResourceType.LAMBDA, name="trigger")),
                       default=to_serializable) == \
-           """{"Type": "Task", "Comment": "", "Resource": "arn:aws:lambda:::function:trigger", "TimeoutSeconds": 600}"""
+           """{"Type": "Task", "Resource": "arn:aws:lambda:::function:trigger", "TimeoutSeconds": 600}"""
 
 
 def test_choice_case_to_json():
@@ -46,4 +48,19 @@ def test_choice_to_json():
 
     assert json.dumps(c,
                       default=to_serializable) == \
-           """{"Type": "Choice", "Comment": "", "Choices": [{"Variable": "Foovar", "Next": "endstate", "BooleanEquals": true}], "Default": "endstate"}"""
+           """{"Type": "Choice", "Choices": [{"Variable": "Foovar", "Next": "endstate", "BooleanEquals": true}], "Default": "endstate"}"""
+
+
+def test_parallel():
+    t = Task(
+        name="endstate",
+        resource=Resource(name="foo-trigger", type=ResourceType.LAMBDA)
+    )
+    branch_a = Branch("branchA")
+    branch_a.next(t)
+    branch_b = Branch("branchB")
+    branch_b.next(t)
+    p = Parallel("ABTest", branches=[branch_a, branch_b])
+    p.build()
+    assert len(p.Branches) == 2
+    read_json_test_case("parallel_simple_state") == p.to_json()

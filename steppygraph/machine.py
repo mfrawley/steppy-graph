@@ -1,7 +1,7 @@
 import json
-from typing import List
+from typing import List, Dict
 
-from steppygraph.states import State, JSON_INDENT, Task, StateEncoder, ResourceType, Resource, Wait, Pass
+from steppygraph.states import State, JSON_INDENT, Task, ResourceType, Resource, Wait, Pass, StateType
 from steppygraph.utils import filter_props
 from steppygraph.serialize import to_serializable
 
@@ -12,11 +12,11 @@ class DuplicateStateError(Exception):
 
 class StateMachine:
     def __init__(self,
-                 region: str='',
-                 account: str='',
+                 region: str = '',
+                 account: str = '',
                  name='') -> None:
         self.TimeoutSeconds = 600
-        self.States: List[State] = None
+        self.States: Dict[str, State] = {}
         self.StartAt: str = None
         self._states: List[State] = []
         self._region = region
@@ -40,7 +40,7 @@ class StateMachine:
                 raise DuplicateStateError(err_message)
 
         if len(self._states) > 0:
-            self._states[-1].Next = state.name()
+            self._states[-1]._next = state.name()
 
         self.set_resource_attrs(state)
         self._states.append(state)
@@ -62,6 +62,7 @@ class StateMachine:
         states_len = len(self._states)
         for i in range(0, states_len):
             s = self._states[i]
+            s.build()
             if i == 0:
                 self.StartAt = s.name()
 
@@ -87,19 +88,34 @@ class StateMachine:
 @to_serializable.register(StateMachine)
 def machine_to_json(obj) -> str:
     for k, s in obj.States.items():
-        obj.States[k] = StateEncoder().default(s)
+        obj.States[k] = s
     return filter_props(obj.__dict__)
 
-# class StateMachineEncoder(json.JSONEncoder):
-#     def default(self, obj):
-#         if isinstance(obj, StateMachine):
-#             for k, s in obj.States.items():
-#                 obj.States[k] = StateEncoder().default(s)
-#             return filter_props(obj.__dict__)
-#
-#         try:
-#             return super(StateMachineEncoder, self).default(obj)
-#         except Exception as e:
-#             print(e)
-#             print(obj.__dict__)
-#
+
+class Branch(StateMachine):
+    def __init__(self,
+                 region: str = '',
+                 account: str = '',
+                 name=''):
+        StateMachine.__init__(self, region=region, account=account, name=name)
+
+
+class Parallel(State):
+    def __init__(self,
+                 name: str,
+                 branches: List[Branch],
+                 comment: str = None
+                 ) -> None:
+        State.__init__(self, type=StateType.PARALLEL, name=name, comment=comment)
+        self.Branches = branches
+
+    def build(self) -> object:
+        for b in self.Branches:
+            b.build()
+        return self
+
+# @to_serializable.register(Parallel)
+# def parallel_to_json(obj) -> str:
+#     for k, s in obj.States.items():
+#         obj.States[k] = s
+#     return filter_props(obj.__dict__)
