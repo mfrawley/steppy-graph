@@ -62,13 +62,13 @@ class StateMachine:
         states_len = len(self._states)
         for i in range(0, states_len):
             s = self._states[i]
-            s.build()
+
             if i == 0:
                 self.StartAt = s.name()
 
             if i == states_len - 1:
                 s.End = True
-            d[s.name()] = s
+            d[s.name()] = s.build()
         self.States = d
         return self
 
