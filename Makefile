@@ -10,6 +10,9 @@ dist: clean
 test_pub:
 	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
+pub:
+	twine upload dist/*
+
 clean:
 	rm -rf build/*
 	rm -rf dist/*
