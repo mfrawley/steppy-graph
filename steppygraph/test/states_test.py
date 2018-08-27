@@ -1,10 +1,10 @@
 import json
 
 from steppygraph.machine import Branch, Parallel
-from steppygraph.states import Choice, ChoiceCase, Comparison, ComparisonType, State, Task, StateType, to_serializable, \
-    Pass
+from steppygraph.states import Choice, ChoiceCase, Comparison, ComparisonType, Task, StateType, to_serializable, \
+    Pass, Catcher, ErrorType, State
 from steppygraph.states import Resource, ResourceType
-from steppygraph.test.testutils import write_json_test_case, read_json_test_case
+from steppygraph.test.testutils import read_json_test_case, write_json_test_case
 
 
 def test_state_to_str():
@@ -64,3 +64,27 @@ def test_parallel():
     p.build()
     assert len(p.Branches) == 2
     read_json_test_case("parallel_simple_state") == p.to_json()
+
+
+def test_catcher_to_json():
+    c = Catcher(error_equals=[ErrorType.TASK_FAILED], next=Task("foo", resource=
+    Resource("fooAct",
+             type=ResourceType.ACTIVITY)))
+    assert json.dumps(c, default=to_serializable) == read_json_test_case("catcher_to_json")
+
+
+def test_setting_timeout_works():
+    t = Task("foo", timeout_seconds=7, resource=Resource("fooRes", type=ResourceType.LAMBDA))
+    assert t.TimeoutSeconds == 7
+
+
+def test_setting_catcher_on_task_works():
+    t2 = Task("foob",
+         resource=Resource("sfs", type=ResourceType.LAMBDA))
+
+    t = Task(
+        name="catachable",
+        resource=Resource(name="foo-trigger", type=ResourceType.LAMBDA),
+        catch=[Catcher(error_equals=[ErrorType.TASK_FAILED], next=t2)]
+    )
+    assert read_json_test_case("catcher_in_the_task") == json.dumps(t, default=to_serializable)

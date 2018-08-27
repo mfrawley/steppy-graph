@@ -1,9 +1,10 @@
 import json
-from enum import Enum
 from typing import List
 
-from steppygraph.utils import filter_props
+from enum import Enum
+
 from steppygraph.serialize import to_serializable
+from steppygraph.utils import filter_props
 
 ERROR_MAX_ATTEMPTS_DEFAULT = 2
 ERROR_BACKOFF_RATE_DEFAULT = 1.5
@@ -102,23 +103,6 @@ def resource_to_json(val) -> str:
     return str(val)
 
 
-# class StateEncoder(json.JSONEncoder):
-#     def default(self, obj):
-#         if isinstance(obj, State):
-#             obj.Type = obj.Type.value
-#             if obj.Next is None:
-#                 del obj.Next
-#             return filter_props(obj.__dict__)
-#         try:
-#             return super(StateEncoder, self).default(obj)
-#         except AttributeError as e:
-#             print(obj.__dict__)
-#             print(e)
-#         except TypeError as e:
-#             print(obj.__dict__)
-#             print(e)
-
-
 class State:
     def __init__(self,
                  name: str,
@@ -157,21 +141,19 @@ def state_to_json(val: State) -> dict:
     return filter_props(val.build().__dict__)
 
 
-class Task(State):
-    def __init__(self,
-                 name: str,
-                 resource: Resource,
-                 comment: str = None,
-                 ) -> None:
-        State.__init__(self, type=StateType.TASK, name=name, comment=comment)
-        if not isinstance(resource, Resource):
-            raise ValueError("resource must be an instance of the type Resource")
-        self.Resource = resource
-        self.ResultPath = None
-        self.Retry: List[Retrier] = None
-        self.Catch = None
-        self.TimeoutSeconds = DEFAULT_TASK_TIMEOUT
-        self.HeartbeatSeconds = None
+class Catcher:
+    def __init__(self, error_equals: List[ErrorType], next: State) -> None:
+        self.ErrorEquals = error_equals
+        self._next = next
+
+    def build(self):
+        self.Next = self._next.name()
+        return self
+
+
+@to_serializable.register(Catcher)
+def state_to_json(val: Catcher) -> dict:
+    return filter_props(val.build().__dict__)
 
 
 class Retrier:
@@ -183,6 +165,32 @@ class Retrier:
         self.MaxAttempts = max_attempts
         self.IntervalSeconds = interval_seconds
         self.ErrorEquals = error_equals
+
+
+@to_serializable.register(Retrier)
+def state_to_json(val: Retrier) -> dict:
+    d = val.__dict__
+    return d
+
+
+class Task(State):
+    def __init__(self,
+                 name: str,
+                 resource: Resource,
+                 comment: str = None,
+                 retry: List[Retrier] = None,
+                 catch: List[Catcher] = None,
+                 timeout_seconds: int = DEFAULT_TASK_TIMEOUT
+                 ) -> None:
+        State.__init__(self, type=StateType.TASK, name=name, comment=comment)
+        if not isinstance(resource, Resource):
+            raise ValueError("resource must be an instance of the type Resource")
+        self.Resource = resource
+        self.ResultPath = None
+        self.Retry = retry
+        self.Catch = catch
+        self.TimeoutSeconds = timeout_seconds
+        self.HeartbeatSeconds = None
 
 
 class Pass(State):

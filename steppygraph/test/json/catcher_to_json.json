@@ -1,0 +1,1 @@
+{"ErrorEquals": ["States.TaskFailed"], "Next": "foo"}

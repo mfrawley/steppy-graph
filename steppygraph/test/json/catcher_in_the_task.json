@@ -1,0 +1,1 @@
+{"Type": "Task", "Resource": "arn:aws:lambda:::function:foo-trigger", "Catch": [{"ErrorEquals": ["States.TaskFailed"], "Next": "foob"}], "TimeoutSeconds": 600}
