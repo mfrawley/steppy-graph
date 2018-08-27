@@ -14,6 +14,14 @@ def test_hello_machine():
     assert s.StartAt == s.get_states()[0].name(), str(s.get_states()[0])
 
 
+def test_add_state_does_not_update_next_property():
+
+    s = StateMachine()
+    s.add_state(Task(resource=Resource("some", type=ResourceType.LAMBDA), name="Kermit", comment='Foo'))
+    s.add_state(Task(resource=Resource("two", type=ResourceType.LAMBDA), name="Moia", comment='Foo'))
+    s.build()
+    assert s.get_states()[0]._next != s.get_states()[1].name(), s.printable()
+
 def test_next_set_for_two_state_machine():
     s = StateMachine()
     res = Resource(name="foores", type=ResourceType.LAMBDA)

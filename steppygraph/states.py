@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import List, Optional
 
 from enum import Enum
 
@@ -84,7 +84,7 @@ class Resource:
                  name: str,
                  type: ResourceType,
                  region: str = '',
-                 aws_ac: str = ''):
+                 aws_ac: str = '') -> None:
         self.resource_type = type
         self.name = name
         self.region = region
@@ -109,12 +109,12 @@ class State:
                  type: StateType,
                  comment: str = None) -> None:
         self.Type = type.value
-        self.End = None
+        self.End: Optional[bool] = None
         self.Comment = comment
         self._name = name
         self.InputPath = None
         self.OutputPath = None
-        self._next = None
+        self._next: Optional[str] = None
 
     def name(self) -> str:
         return self._name
@@ -152,15 +152,16 @@ class Catcher:
 
 
 @to_serializable.register(Catcher)
-def state_to_json(val: Catcher) -> dict:
+def catcher_to_json(val: Catcher) -> dict:
     return filter_props(val.build().__dict__)
 
 
 class Retrier:
-    def __init__(self, max_attempts=ERROR_MAX_ATTEMPTS_DEFAULT,
+    def __init__(self,
+                 max_attempts=ERROR_MAX_ATTEMPTS_DEFAULT,
                  backoff_rate=ERROR_BACKOFF_RATE_DEFAULT,
                  interval_seconds=ERROR_INTERVAL_S_DEFAULT,
-                 error_equals: ErrorType = [ErrorType.ALL]) -> None:
+                 error_equals: List[ErrorType] = [ErrorType.ALL]) -> None:
         self.BackoffRate = backoff_rate
         self.MaxAttempts = max_attempts
         self.IntervalSeconds = interval_seconds
@@ -168,7 +169,7 @@ class Retrier:
 
 
 @to_serializable.register(Retrier)
-def state_to_json(val: Retrier) -> dict:
+def retrier_to_json(val: Retrier) -> dict:
     d = val.__dict__
     return d
 
@@ -199,7 +200,7 @@ class Pass(State):
                  result: dict = None,
                  result_path: str = None,
                  comment: str = None
-                 ):
+                 ) -> None:
         State.__init__(self, type=StateType.PASS, name=name, comment=comment)
         self.ResultPath = result_path
         self.Result = result
@@ -210,7 +211,7 @@ class Wait(State):
                  name: str,
                  seconds: int = DEFAULT_TASK_TIMEOUT,
                  comment: str = None
-                 ):
+                 ) -> None:
         State.__init__(self, type=StateType.WAIT, name=name, comment=comment)
         self.Seconds = seconds
 
@@ -238,7 +239,7 @@ class ChoiceCase:
 
 
 @to_serializable.register(ChoiceCase)
-def state_to_json(val: ChoiceCase) -> dict:
+def choicecase_to_json(val: ChoiceCase) -> dict:
     d = val.__dict__
     d[val._comparison.type()] = val._comparison.value()
     return filter_props(d)

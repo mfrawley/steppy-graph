@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict
+from typing import List, Dict, TypeVar, Any, Optional
 
 from steppygraph.states import State, JSON_INDENT, Task, ResourceType, Resource, Wait, Pass, StateType
 from steppygraph.utils import filter_props
@@ -17,30 +17,38 @@ class StateMachine:
                  name='') -> None:
         self.TimeoutSeconds = 600
         self.States: Dict[str, State] = {}
-        self.StartAt: str = None
+        self.StartAt: Optional[str] = None
         self._states: List[State] = []
         self._region = region
         self._account = account
         self._name = name
+        self.End: Optional[bool] = None
 
     def to_json(self) -> str:
         return json.dumps(self,
                           sort_keys=True,
                           indent=JSON_INDENT,
-                          default=to_serializable)
+                          default=to_serializable) # type: ignore
 
     def next(self, state: State) -> object:
         """
-        This method appends a State to the task graph and does some magic to help init certain types
-        of States.
+        This method adds a State to the task graph via add_state but it also
+        sets the Next property of the previously added state to point to it for convenience.
+        """
+        if len(self._states) > 0:
+            self._states[-1].set_next(state.name())
+
+        return self.add_state(state)
+
+    def add_state(self, state: State) -> object:
+        """
+        This method appends a State to the task graph but does NOT affect the Next property.
+        Useful when adding states which are out of sequence.
         """
         for s in self._states:
             if s.name() == state.name():
                 err_message = f"Duplicate State: Name '{s.name()}' already used in graph."
                 raise DuplicateStateError(err_message)
-
-        if len(self._states) > 0:
-            self._states[-1].set_next(state.name())
 
         self.set_resource_attrs(state)
         self._states.append(state)
@@ -57,7 +65,7 @@ class StateMachine:
                 state.Resource.aws_ac = self._account
                 state.Resource.region = self._region
 
-    def build(self) -> object:
+    def build(self) -> Any:
         d = {}
         states_len = len(self._states)
         for i in range(0, states_len):
@@ -86,7 +94,7 @@ class StateMachine:
 
 
 @to_serializable.register(StateMachine)
-def machine_to_json(obj) -> str:
+def machine_to_json(obj) -> Dict[str, Any]:
     for k, s in obj.States.items():
         obj.States[k] = s
     return filter_props(obj.__dict__)
@@ -96,7 +104,7 @@ class Branch(StateMachine):
     def __init__(self,
                  region: str = '',
                  account: str = '',
-                 name=''):
+                 name='') -> None:
         StateMachine.__init__(self, region=region, account=account, name=name)
         del self.TimeoutSeconds
 
