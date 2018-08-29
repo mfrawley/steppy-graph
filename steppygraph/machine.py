@@ -1,7 +1,7 @@
 import json
 from typing import List, Dict, TypeVar, Any, Optional
 
-from steppygraph.states import State, JSON_INDENT, Task, ResourceType, Resource, Wait, Pass, StateType
+from steppygraph.states import State, JSON_INDENT, Task, ResourceType, Resource, Wait, Pass, StateType, Catcher
 from steppygraph.utils import filter_props
 from steppygraph.serialize import to_serializable
 
@@ -113,12 +113,17 @@ class Parallel(State):
     def __init__(self,
                  name: str,
                  branches: List[Branch],
-                 comment: str = None
+                 comment: str = None,
+                 catch: List[Catcher] = None
                  ) -> None:
         State.__init__(self, type=StateType.PARALLEL, name=name, comment=comment)
+        self._catch = catch
         self.Branches = branches
 
     def build(self) -> object:
+        if self._catch:
+            self.Catch = self._catch
+
         for b in self.Branches:
             b.build()
         return self

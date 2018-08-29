@@ -120,7 +120,7 @@ class State:
         return self._name
 
     def build(self):
-        if self._next is not None:
+        if self._next:
             self.Next = self._next
         return self
 
@@ -131,8 +131,15 @@ class State:
                           indent=JSON_INDENT)
 
     def set_next(self, next: str):
-        self._next = next
-        self.Next = next
+        """
+        Note - Next property can only be set once, after that it is readonly
+        :param next: name of the subsequent state
+        """
+        if not type(next) == str:
+            raise ValueError("Next should be a string")
+
+        if self._next is None:
+            self._next = next
 
 
 @to_serializable.register(State)
