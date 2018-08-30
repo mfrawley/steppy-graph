@@ -270,5 +270,5 @@ class Succeed(State):
         State.__init__(self, type=StateType.SUCCEED, name=name)
 
 @to_serializable.register(Succeed)
-def choicecase_to_json(val: Succeed) -> dict:
+def succeed_to_json(val: Succeed) -> dict:
     return filter_props(val.__dict__)
