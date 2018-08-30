@@ -33,6 +33,7 @@ class StateType(Enum):
     WAIT = 'Wait'
     CHOICE = 'Choice'
     PARALLEL = 'Parallel'
+    SUCCEED = 'Succeed'
 
     def __str__(self):
         return self.value
@@ -262,3 +263,12 @@ class Choice(State):
         State.__init__(self, type=StateType.CHOICE, name=name, comment=comment)
         self.Choices = choices
         self.Default = default.name()
+
+
+class Succeed(State):
+    def __init__(self, name: str) -> None:
+        State.__init__(self, type=StateType.SUCCEED, name=name)
+
+@to_serializable.register(Succeed)
+def choicecase_to_json(val: Succeed) -> dict:
+    return filter_props(val.__dict__)
