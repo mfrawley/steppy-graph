@@ -75,7 +75,7 @@ class StateMachine:
                 self.StartAt = s.name()
 
             if i == states_len - 1:
-                if s.Type != StateType.FAIL:
+                if s.Type not in (StateType.FAIL, StateType.SUCCEED):
                     s.End = True
             d[s.name()] = s.build()
         self.States = d
@@ -89,6 +89,9 @@ class StateMachine:
 
     def printable(self) -> str:
         return ' '.join([str(s.__dict__) for k, s in self.build().States.items()])
+
+    def last(self) -> State:
+        return self._states[-1]
 
     def name(self) -> str:
         return self._name

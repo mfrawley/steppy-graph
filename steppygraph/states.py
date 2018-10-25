@@ -143,6 +143,9 @@ class State:
         if self._next is None:
             self._next = next
 
+    def get_next(self) -> Optional[str]:
+        return self._next
+
 
 @to_serializable.register(State)
 def state_to_json(val: State) -> dict:
