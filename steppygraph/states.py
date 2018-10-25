@@ -34,6 +34,7 @@ class StateType(Enum):
     CHOICE = 'Choice'
     PARALLEL = 'Parallel'
     SUCCEED = 'Succeed'
+    FAIL = 'Fail'
 
     def __str__(self):
         return self.value
@@ -269,6 +270,19 @@ class Succeed(State):
     def __init__(self, name: str) -> None:
         State.__init__(self, type=StateType.SUCCEED, name=name)
 
+
 @to_serializable.register(Succeed)
 def succeed_to_json(val: Succeed) -> dict:
+    return filter_props(val.__dict__)
+
+
+class Fail(State):
+    def __init__(self, name: str, cause: str = "", error: str = "") -> None:
+        State.__init__(self, type=StateType.FAIL, name=name)
+        self.Cause = cause
+        self.Error = error
+
+
+@to_serializable.register(Fail)
+def fail_to_json(val: Fail) -> dict:
     return filter_props(val.__dict__)
