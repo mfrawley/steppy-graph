@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="steppygraph",
-    version="0.1.1",
+    version="0.1.2",
     author="Mark Frawley",
     author_email="markfrawley+pypi@gmail.com",
     description="A Python DSL for AWS Step Functions",

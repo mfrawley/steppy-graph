@@ -75,7 +75,8 @@ class StateMachine:
                 self.StartAt = s.name()
 
             if i == states_len - 1:
-                s.End = True
+                if s.Type != StateType.FAIL:
+                    s.End = True
             d[s.name()] = s.build()
         self.States = d
         return self
