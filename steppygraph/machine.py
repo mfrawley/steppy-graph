@@ -7,9 +7,6 @@ from steppygraph.serialize import to_serializable
 
 TERMINAL_STATES = (StateType.FAIL, StateType.SUCCEED)
 
-def reverse_enum(L):
-    for index in reversed(xrange(len(L))):
-        yield index, L[index]
 
 class DuplicateStateError(Exception):
     pass
@@ -33,9 +30,9 @@ class StateMachine:
         return json.dumps(self,
                           sort_keys=True,
                           indent=JSON_INDENT,
-                          default=to_serializable) # type: ignore
+                          default=to_serializable)  # type: ignore
 
-    def idx(self, name:str) -> Optional[int]:
+    def idx(self, name: str) -> Optional[int]:
         """
         Returns index of the first state in the graph with a matching name
         :param name:
@@ -54,7 +51,7 @@ class StateMachine:
         :return: index
         """
         # traverse the list backwards
-        for index in range(len(self._states)-1, -1, -1):
+        for index in range(len(self._states) - 1, -1, -1):
             s = self._states[index]
             if s._autoconnect is True and s.Type not in TERMINAL_STATES and s._next is None:
                 return index
@@ -65,7 +62,7 @@ class StateMachine:
         This method adds a State to the task graph via add_state but it also
         sets the Next property of the previously added state to point to it for convenience.
         """
-        state._autoconnect=True
+        state._autoconnect = True
 
         if len(self._states) > 0:
             orphan_idx = self.last_orphan()
