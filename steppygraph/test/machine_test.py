@@ -1,8 +1,9 @@
 import json
+import sys
 from pathlib import PurePath
 
 from steppygraph.machine import StateMachine
-from steppygraph.states import Task, Resource, ResourceType, Wait, Pass
+from steppygraph.states import Task, Resource, ResourceType, Wait, Pass, Succeed, Fail, ErrorType, Catcher
 from steppygraph.test.testutils import read_json_test_case
 
 
@@ -15,12 +16,12 @@ def test_hello_machine():
 
 
 def test_add_state_does_not_update_next_property():
-
     s = StateMachine()
     s.add_state(Task(resource=Resource("some", type=ResourceType.LAMBDA), name="Kermit", comment='Foo'))
     s.add_state(Task(resource=Resource("two", type=ResourceType.LAMBDA), name="Moia", comment='Foo'))
     s.build()
     assert s.get_states()[0]._next != s.get_states()[1].name(), s.printable()
+
 
 def test_next_set_for_two_state_machine():
     s = StateMachine()
@@ -45,8 +46,7 @@ def test_pass_wait():
     s.build()
 
     assert s.count_states() == 3
-    assert s.get_states()[-1].Seconds == 5
-
+    assert s.last().Seconds == 5
     assert s.to_json() == read_json_test_case('pass_wait')
 
 
@@ -56,3 +56,28 @@ def test_machine_sets_region_and_ac():
     s.build()
     assert s.get_states()[0].Resource.region == 'eu-west-1'
     assert s.get_states()[0].Resource.aws_ac == 1234
+
+
+def test_idx():
+    s = StateMachine()
+    s.next(Task(resource=Resource("some", type=ResourceType.LAMBDA), name="Kermit", comment='Foo'))
+    s.next(Task(resource=Resource("some", type=ResourceType.LAMBDA), name="Blobby", comment='Foo'))
+    s.build()
+    assert s.idx('Blobby') == 1
+    assert s.idx('Kermit') == 0
+    assert s.idx('NotPresent') == None
+
+
+def test_last_orphan():
+    s = StateMachine()
+    s.next(Task(resource=Resource("some", type=ResourceType.LAMBDA), name="Blobby", comment='Foo'))
+    s.add_state(Pass("Boo"))
+    s.add_state(Wait("Baz"))
+    s.next(Succeed("Done"))
+    s.build()
+    assert s.idx('Blobby') == 0
+    assert s.get_states()[0].Next == 'Done'
+
+
+def snake_to_camel(name: str) -> str:
+    return ''.join(map(str.capitalize, name.split('_')))

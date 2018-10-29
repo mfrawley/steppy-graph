@@ -117,6 +117,7 @@ class State:
         self.InputPath = None
         self.OutputPath = None
         self._next: Optional[str] = None
+        self._autoconnect = False
 
     def name(self) -> str:
         return self._name
@@ -142,6 +143,9 @@ class State:
 
         if self._next is None:
             self._next = next
+
+    def get_next(self) -> Optional[str]:
+        return self._next
 
 
 @to_serializable.register(State)

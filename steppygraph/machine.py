@@ -1,9 +1,11 @@
 import json
-from typing import List, Dict, TypeVar, Any, Optional
+from typing import List, Dict, TypeVar, Any, Optional, Tuple
 
 from steppygraph.states import State, JSON_INDENT, Task, ResourceType, Resource, Wait, Pass, StateType, Catcher
 from steppygraph.utils import filter_props
 from steppygraph.serialize import to_serializable
+
+TERMINAL_STATES = (StateType.FAIL, StateType.SUCCEED)
 
 
 class DuplicateStateError(Exception):
@@ -28,15 +30,46 @@ class StateMachine:
         return json.dumps(self,
                           sort_keys=True,
                           indent=JSON_INDENT,
-                          default=to_serializable) # type: ignore
+                          default=to_serializable)  # type: ignore
+
+    def idx(self, name: str) -> Optional[int]:
+        """
+        Returns index of the first state in the graph with a matching name
+        :param name:
+        :return: index
+        """
+        for i in range(0, len(self._states)):
+            s = self._states[i]
+            if name == s.name():
+                return i
+        return None
+
+    def last_orphan(self) -> Optional[int]:
+        """
+        Returns index of the most recently added state which is neither a terminal state nor has a Next attribute set.
+        :param name:
+        :return: index
+        """
+        # traverse the list backwards
+        for index in range(len(self._states) - 1, -1, -1):
+            s = self._states[index]
+            if s._autoconnect is True and s.Type not in TERMINAL_STATES and s._next is None:
+                return index
+        return None
 
     def next(self, state: State) -> object:
         """
         This method adds a State to the task graph via add_state but it also
         sets the Next property of the previously added state to point to it for convenience.
         """
+        state._autoconnect = True
+
         if len(self._states) > 0:
-            self._states[-1].set_next(state.name())
+            orphan_idx = self.last_orphan()
+            if orphan_idx is not None:
+                s = self._states[orphan_idx]
+                if s._autoconnect:
+                    s.set_next(state.name())
 
         return self.add_state(state)
 
@@ -75,7 +108,7 @@ class StateMachine:
                 self.StartAt = s.name()
 
             if i == states_len - 1:
-                if s.Type != StateType.FAIL:
+                if s.Type not in TERMINAL_STATES:
                     s.End = True
             d[s.name()] = s.build()
         self.States = d
@@ -89,6 +122,9 @@ class StateMachine:
 
     def printable(self) -> str:
         return ' '.join([str(s.__dict__) for k, s in self.build().States.items()])
+
+    def last(self) -> State:
+        return self._states[-1]
 
     def name(self) -> str:
         return self._name
