@@ -108,7 +108,7 @@ class StateMachine:
                 self.StartAt = s.name()
 
             if i == states_len - 1:
-                if s.Type not in (StateType.FAIL, StateType.SUCCEED):
+                if s.Type not in TERMINAL_STATES:
                     s.End = True
             d[s.name()] = s.build()
         self.States = d
