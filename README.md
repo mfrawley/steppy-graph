@@ -50,3 +50,7 @@ should produce output similar to:
 }
 ```
 
+Note - states added via the next() method in StateMachine are always "autoconnected", that is they have a boolean
+flag set which will automatically wire them up to the next state in the graph. Use add_state for states that you want to
+add without any auto-connection of the Next attribute.
+

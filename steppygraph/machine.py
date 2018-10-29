@@ -1,10 +1,15 @@
 import json
-from typing import List, Dict, TypeVar, Any, Optional
+from typing import List, Dict, TypeVar, Any, Optional, Tuple
 
 from steppygraph.states import State, JSON_INDENT, Task, ResourceType, Resource, Wait, Pass, StateType, Catcher
 from steppygraph.utils import filter_props
 from steppygraph.serialize import to_serializable
 
+TERMINAL_STATES = (StateType.FAIL, StateType.SUCCEED)
+
+def reverse_enum(L):
+    for index in reversed(xrange(len(L))):
+        yield index, L[index]
 
 class DuplicateStateError(Exception):
     pass
@@ -30,13 +35,44 @@ class StateMachine:
                           indent=JSON_INDENT,
                           default=to_serializable) # type: ignore
 
+    def idx(self, name:str) -> Optional[int]:
+        """
+        Returns index of the first state in the graph with a matching name
+        :param name:
+        :return: index
+        """
+        for i in range(0, len(self._states)):
+            s = self._states[i]
+            if name == s.name():
+                return i
+        return None
+
+    def last_orphan(self) -> Optional[int]:
+        """
+        Returns index of the most recently added state which is neither a terminal state nor has a Next attribute set.
+        :param name:
+        :return: index
+        """
+        # traverse the list backwards
+        for index in range(len(self._states)-1, -1, -1):
+            s = self._states[index]
+            if s._autoconnect is True and s.Type not in TERMINAL_STATES and s._next is None:
+                return index
+        return None
+
     def next(self, state: State) -> object:
         """
         This method adds a State to the task graph via add_state but it also
         sets the Next property of the previously added state to point to it for convenience.
         """
+        state._autoconnect=True
+
         if len(self._states) > 0:
-            self._states[-1].set_next(state.name())
+            orphan_idx = self.last_orphan()
+            if orphan_idx is not None:
+                s = self._states[orphan_idx]
+                if s._autoconnect:
+                    s.set_next(state.name())
 
         return self.add_state(state)
 

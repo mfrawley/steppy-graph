@@ -1,8 +1,9 @@
 import json
+import sys
 from pathlib import PurePath
 
 from steppygraph.machine import StateMachine
-from steppygraph.states import Task, Resource, ResourceType, Wait, Pass
+from steppygraph.states import Task, Resource, ResourceType, Wait, Pass, Succeed, Fail, ErrorType, Catcher
 from steppygraph.test.testutils import read_json_test_case
 
 
@@ -46,7 +47,6 @@ def test_pass_wait():
 
     assert s.count_states() == 3
     assert s.last().Seconds == 5
-
     assert s.to_json() == read_json_test_case('pass_wait')
 
 
@@ -56,3 +56,28 @@ def test_machine_sets_region_and_ac():
     s.build()
     assert s.get_states()[0].Resource.region == 'eu-west-1'
     assert s.get_states()[0].Resource.aws_ac == 1234
+
+
+def test_idx():
+    s = StateMachine()
+    s.next(Task(resource=Resource("some", type=ResourceType.LAMBDA), name="Kermit", comment='Foo'))
+    s.next(Task(resource=Resource("some", type=ResourceType.LAMBDA), name="Blobby", comment='Foo'))
+    s.build()
+    assert s.idx('Blobby') == 1
+    assert s.idx('Kermit') == 0
+    assert s.idx('NotPresent') == None
+
+
+def test_last_orphan():
+    s = StateMachine()
+    s.next(Task(resource=Resource("some", type=ResourceType.LAMBDA), name="Blobby", comment='Foo'))
+    s.add_state(Pass("Boo"))
+    s.add_state(Wait("Baz"))
+    s.next(Succeed("Done"))
+    s.build()
+    assert s.idx('Blobby') == 0
+    assert s.get_states()[0].Next == 'Done'
+
+
+def snake_to_camel(name: str) -> str:
+    return ''.join(map(str.capitalize, name.split('_')))

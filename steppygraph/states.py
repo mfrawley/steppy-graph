@@ -117,6 +117,7 @@ class State:
         self.InputPath = None
         self.OutputPath = None
         self._next: Optional[str] = None
+        self._autoconnect = False
 
     def name(self) -> str:
         return self._name
