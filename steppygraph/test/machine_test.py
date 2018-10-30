@@ -79,5 +79,16 @@ def test_last_orphan():
     assert s.get_states()[0].Next == 'Done'
 
 
+def test_end_not_set_in_succeed_state():
+    s = StateMachine()
+    s.next(Task(resource=Resource("some", type=ResourceType.LAMBDA), name="Blobby", comment='Foo'))
+    s.next(Wait("Baz"))
+    s.next(Succeed("Done"))
+    s.build()
+    print(s.to_json())
+    assert s.get_states()[-1].End is None
+
+
+
 def snake_to_camel(name: str) -> str:
     return ''.join(map(str.capitalize, name.split('_')))

@@ -80,7 +80,7 @@ class StateMachine:
         """
         for s in self._states:
             if s.name() == state.name():
-                err_message = f"Duplicate State: Name '{s.name()}' already used in graph."
+                err_message = f"Duplicate State: Name '{s.name()}' already used in graph. {[ss.name() for ss in self._states]}"
                 raise DuplicateStateError(err_message)
 
         self.set_resource_attrs(state)
@@ -108,7 +108,7 @@ class StateMachine:
                 self.StartAt = s.name()
 
             if i == states_len - 1:
-                if s.Type not in TERMINAL_STATES:
+                if s.Type not in [ts.value for ts in TERMINAL_STATES]:
                     s.End = True
             d[s.name()] = s.build()
         self.States = d
