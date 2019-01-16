@@ -41,8 +41,9 @@ class StateType(Enum):
 
 
 class ResourceType(Enum):
-    LAMBDA = 'lambda'
+    LAMBDA   = 'lambda'
     ACTIVITY = 'activity'
+    BATCH    = 'batch'
 
     def __str__(self):
         return self.value
@@ -74,7 +75,7 @@ class ComparisonType(Enum):
 
 class LogicalOperatorType(Enum):
     AND = "And"
-    OR = "Or"
+    OR  = "Or"
     NOT = "Not"
 
     def __str__(self):
@@ -95,6 +96,8 @@ class Resource:
     def __str__(self) -> str:
         if self.resource_type == ResourceType.LAMBDA:
             return f"arn:aws:lambda:{self.region}:{self.aws_ac}:function:{self.name}"
+        elif self.resource_type == ResourceType.BATCH:
+            return f"arn:aws:states:{self.region}:{self.aws_ac}:batch:submitJob.{self.name}"
         else:
             return f"arn:aws:states:{self.region}:{self.aws_ac}:activity:{self.name}"
 

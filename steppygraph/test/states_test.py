@@ -21,10 +21,16 @@ def test_resource_to_json():
                       default=to_serializable) == '"arn:aws:lambda:eu-west-1:1234:function:foo-trigger"'
 
 
-def test_task_to_json():
+def test_lambda_task_to_json():
     assert json.dumps(Task(name="sdfdsf", resource=Resource(type=ResourceType.LAMBDA, name="trigger")),
                       default=to_serializable) == \
            """{"Type": "Task", "Resource": "arn:aws:lambda:::function:trigger", "TimeoutSeconds": 600}"""
+
+
+def test_batch_task_to_json():
+    assert json.dumps(Task(name="foo", resource=Resource(type=ResourceType.BATCH, name="foo")),
+                      default=to_serializable) == \
+           """{"Type": "Task", "Resource": "arn:aws:states:::batch:submitJob.foo", "TimeoutSeconds": 600}"""
 
 
 def test_choice_case_to_json():
@@ -80,7 +86,7 @@ def test_setting_timeout_works():
 
 def test_setting_catcher_on_task_works():
     t2 = Task("foob",
-         resource=Resource("sfs", type=ResourceType.LAMBDA))
+              resource=Resource("sfs", type=ResourceType.LAMBDA))
 
     t = Task(
         name="catachable",
