@@ -2,7 +2,7 @@ import json
 
 from steppygraph.machine import Branch, Parallel
 from steppygraph.states import Choice, ChoiceCase, Comparison, ComparisonType, Task, StateType, to_serializable, \
-    Pass, Catcher, ErrorType, State
+    Pass, Catcher, ErrorType, State, BatchJob
 from steppygraph.states import Resource, ResourceType
 from steppygraph.test.testutils import read_json_test_case, write_json_test_case
 
@@ -28,9 +28,10 @@ def test_lambda_task_to_json():
 
 
 def test_batch_task_to_json():
-    assert json.dumps(Task(name="foo", resource=Resource(type=ResourceType.BATCH, name="foo")),
+    assert json.dumps(BatchJob(name="foo", definition="fooDef", queue="fooQueue", parameters="$.batchJob"),
                       default=to_serializable) == \
-           """{"Type": "Task", "Resource": "arn:aws:states:::batch:submitJob.foo", "TimeoutSeconds": 600}"""
+           """{"Type": "Task", "Resource": "arn:aws:states:::batch:submitJob.sync", "TimeoutSeconds": 600, """ + \
+           """"Parameters": {"JobDefinition": "fooDef", "JobName": "foo", "JobQueue": "fooQueue", "Parameters.$": "$.batchJob"}}"""
 
 
 def test_choice_case_to_json():

@@ -41,9 +41,9 @@ class StateType(Enum):
 
 
 class ResourceType(Enum):
-    LAMBDA   = 'lambda'
+    LAMBDA = 'lambda'
     ACTIVITY = 'activity'
-    BATCH    = 'batch'
+    BATCH = 'batch'
 
     def __str__(self):
         return self.value
@@ -75,7 +75,7 @@ class ComparisonType(Enum):
 
 class LogicalOperatorType(Enum):
     AND = "And"
-    OR  = "Or"
+    OR = "Or"
     NOT = "Not"
 
     def __str__(self):
@@ -97,7 +97,7 @@ class Resource:
         if self.resource_type == ResourceType.LAMBDA:
             return f"arn:aws:lambda:{self.region}:{self.aws_ac}:function:{self.name}"
         elif self.resource_type == ResourceType.BATCH:
-            return f"arn:aws:states:{self.region}:{self.aws_ac}:batch:submitJob.{self.name}"
+            return f"arn:aws:states:{self.region}:{self.aws_ac}:batch:submitJob.sync"
         else:
             return f"arn:aws:states:{self.region}:{self.aws_ac}:activity:{self.name}"
 
@@ -193,7 +193,7 @@ def retrier_to_json(val: Retrier) -> dict:
 class Task(State):
     def __init__(self,
                  name: str,
-                 resource: Resource,
+                 resource: Resource = None,
                  comment: str = None,
                  retry: List[Retrier] = None,
                  catch: List[Catcher] = None,
@@ -208,6 +208,34 @@ class Task(State):
         self.Catch = catch
         self.TimeoutSeconds = timeout_seconds
         self.HeartbeatSeconds = None
+
+
+class BatchJob(Task):
+    def __init__(self,
+                 name: str,
+                 definition: str,
+                 queue: str,
+                 parameters: str = None,
+                 comment: str = None,
+                 retry: List[Retrier] = None,
+                 catch: List[Catcher] = None,
+                 timeout_seconds: int = DEFAULT_TASK_TIMEOUT
+                 ) -> None:
+        Task.__init__(self,
+                      name=name,
+                      resource=Resource(name=name, type=ResourceType.BATCH),
+                      comment=comment,
+                      retry=retry,
+                      catch=catch,
+                      timeout_seconds=timeout_seconds)
+        self.Parameters = {
+            "JobDefinition": definition,
+            "JobName": name,
+            "JobQueue": queue
+        }
+
+        if parameters is not None:
+            self.Parameters["Parameters.$"] = parameters
 
 
 class Pass(State):
