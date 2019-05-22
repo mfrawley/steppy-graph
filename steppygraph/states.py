@@ -44,6 +44,7 @@ class ResourceType(Enum):
     LAMBDA = 'lambda'
     ACTIVITY = 'activity'
     BATCH = 'batch'
+    ECS = 'ecs'
 
     def __str__(self):
         return self.value
@@ -98,6 +99,8 @@ class Resource:
             return f"arn:aws:lambda:{self.region}:{self.aws_ac}:function:{self.name}"
         elif self.resource_type == ResourceType.BATCH:
             return f"arn:aws:states:{self.region}:{self.aws_ac}:batch:submitJob.sync"
+        elif self.resource_type == ResourceType.ECS:
+            return f"arn:aws:states:{self.region}:{self.aws_ac}:ecs:runTask.sync"
         else:
             return f"arn:aws:states:{self.region}:{self.aws_ac}:activity:{self.name}"
 
@@ -201,7 +204,8 @@ class Task(State):
                  ) -> None:
         State.__init__(self, type=StateType.TASK, name=name, comment=comment)
         if not isinstance(resource, Resource):
-            raise ValueError("resource must be an instance of the type Resource")
+            raise ValueError(
+                "resource must be an instance of the type Resource")
         self.Resource = resource
         self.ResultPath = None
         self.Retry = retry
@@ -236,6 +240,35 @@ class BatchJob(Task):
 
         if parameters is not None:
             self.Parameters["Parameters.$"] = parameters
+
+
+class EcsTask(Task):
+    def __init__(self,
+                 name: str,
+                 cluster: str,
+                 definition: str,
+                 launch_type: str,
+                 network_configuration: dict = {},
+                 overrides: dict = {},
+                 comment: str = None,
+                 retry: List[Retrier] = None,
+                 catch: List[Catcher] = None,
+                 timeout_seconds: int = DEFAULT_TASK_TIMEOUT
+                 ) -> None:
+        Task.__init__(self,
+                      name=name,
+                      resource=Resource(name=name, type=ResourceType.ECS),
+                      comment=comment,
+                      retry=retry,
+                      catch=catch,
+                      timeout_seconds=timeout_seconds)
+        self.Parameters = {
+            "Cluster": cluster,
+            "LaunchType": launch_type,
+            "TaskDefinition": definition,
+            "NetworkConfiguration": network_configuration,
+            "Overrides": overrides
+        }
 
 
 class Pass(State):
