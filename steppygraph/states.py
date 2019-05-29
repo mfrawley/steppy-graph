@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from enum import Enum
 
@@ -241,9 +241,11 @@ class ContainerOverrides:
         if vcpus:
             self.Vcpus = vcpus
 
+
 @to_serializable.register(ContainerOverrides)
 def containeroverrides_to_json(val: ContainerOverrides) -> dict:
     return filter_props(val.__dict__)
+
 
 class BatchJob(Task):
     def __init__(self,
@@ -264,7 +266,7 @@ class BatchJob(Task):
                       retry=retry,
                       catch=catch,
                       timeout_seconds=timeout_seconds)
-        self.Parameters = {
+        self.Parameters: Dict[str, Any] = {
             "JobDefinition": definition,
             "JobName": name,
             "JobQueue": queue
@@ -276,9 +278,11 @@ class BatchJob(Task):
         if parameters is not None:
             self.Parameters["Parameters.$"] = parameters
 
+
 @to_serializable.register(BatchJob)
 def batchjob_to_json(val: BatchJob) -> dict:
     return filter_props(val.__dict__)
+
 
 class EcsTask(Task):
     def __init__(self,
