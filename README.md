@@ -1,4 +1,4 @@
-# Steppy Graph - An alpha-quality DSL for Step Functions
+# Steppy Graph - A DSL for Step Functions
 
 Example Usage:
 ```
