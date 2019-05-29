@@ -214,6 +214,37 @@ class Task(State):
         self.HeartbeatSeconds = None
 
 
+class ContainerOverrides:
+    def __init__(self,
+                 command: Optional[str] = None,
+                 environment: Optional[str] = None,
+                 instance_type: Optional[str] = None,
+                 memory: Optional[int] = None,
+                 resource_requirements: Optional[list] = None,
+                 vcpus: Optional[int] = None
+                 ) -> None:
+        if command:
+            self.Command = command
+
+        if environment:
+            self.Environment = environment
+
+        if instance_type:
+            self.InstanceType = instance_type
+
+        if memory:
+            self.Memory = memory
+
+        if resource_requirements:
+            self.ResourceRequirements = resource_requirements
+
+        if vcpus:
+            self.Vcpus = vcpus
+
+@to_serializable.register(ContainerOverrides)
+def containeroverrides_to_json(val: ContainerOverrides) -> dict:
+    return filter_props(val.__dict__)
+
 class BatchJob(Task):
     def __init__(self,
                  name: str,
@@ -223,7 +254,8 @@ class BatchJob(Task):
                  comment: str = None,
                  retry: List[Retrier] = None,
                  catch: List[Catcher] = None,
-                 timeout_seconds: int = DEFAULT_TASK_TIMEOUT
+                 timeout_seconds: int = DEFAULT_TASK_TIMEOUT,
+                 container_overrides: Optional[ContainerOverrides] = None
                  ) -> None:
         Task.__init__(self,
                       name=name,
@@ -238,9 +270,15 @@ class BatchJob(Task):
             "JobQueue": queue
         }
 
+        if container_overrides:
+            self.Parameters["ContainerOverrides"] = container_overrides
+
         if parameters is not None:
             self.Parameters["Parameters.$"] = parameters
 
+@to_serializable.register(BatchJob)
+def batchjob_to_json(val: BatchJob) -> dict:
+    return filter_props(val.__dict__)
 
 class EcsTask(Task):
     def __init__(self,
